@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+    xmlns:tx="http://www.springframework.org/schema/tx"
+    xmlns:context="http://www.springframework.org/schema/context"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans-4.1.xsd
+        http://www.springframework.org/schema/tx
+        http://www.springframework.org/schema/tx/spring-tx-4.1.xsd
+        http://www.springframework.org/schema/aop
+        http://www.springframework.org/schema/aop/spring-aop-4.1.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context-4.1.xsd">
+  
+ 
+	<!-- 加载数据库资源文件 -->
+	<bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+	    <property name="locations" value="classpath:dbconn.properties"/>
+	</bean>
+	
+	<!-- 1.配置数据源，并注入相应数据源信息 -->
+	<bean id="myDataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+	      <property name="driverClassName" value="${conn.driverclass}"/>
+	      <property name="url" value="${conn.url}"/>
+	      <property name="username" value="${conn.username}"/>
+	      <property name="password" value="${conn.userpass}"/>
+	</bean>
+	
+	<!-- 2.配置sessionFactory工厂 -->
+	<bean id="mySessionFactory" class="org.springframework.orm.hibernate4.LocalSessionFactoryBean">
+	      <!-- 引用数据源 -->
+	      <property name="dataSource" ref="myDataSource"/>
+	
+	      <!-- 管理映射文件 -->
+	      <property name="annotatedClasses">
+            <list>
+                <value>com.yd.renters.javabean.Users</value>
+                <value>com.yd.renters.javabean.Renmess</value>
+            </list>
+          </property>
+	      <property name="hibernateProperties">
+	          <value>
+	              hibernate.dialect=org.hibernate.dialect.MySQL5Dialect
+	              hibernate.show_sql=true
+	          </value>
+	      </property>
+	</bean>
+	
+	<!-- 6.配置事务管理器类 -->
+	<bean id="transactionManager" class="org.springframework.orm.hibernate4.HibernateTransactionManager">
+        <property name="sessionFactory" ref="mySessionFactory"/>
+	</bean>
+
+	<!-- 扫描器 -->
+	<context:component-scan base-package="com.yd.renters.*"></context:component-scan>
+	
+	<!-- 配置事务注解切面管理器 -->
+	<tx:annotation-driven transaction-manager="transactionManager"/>
+	  
+	<!-- 切面自动代理 -->
+	<aop:aspectj-autoproxy />
+ 
+</beans>
+
+
+
+
+
